@@ -1,0 +1,6 @@
+{
+	"NEGATIVE_AMOUNT_INVALID": {
+		"message": "field 'amount' cannot be a negative value",
+		"code": 404
+	}
+}

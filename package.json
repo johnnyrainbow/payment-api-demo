@@ -5,8 +5,7 @@
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"start": "npm run transpile && node server.js",
-		"watch": "tsc -w"
+		"start": "nodemon server.ts"
 	},
 	"author": "",
 	"license": "ISC",
@@ -15,6 +14,11 @@
 		"typescript": "^4.5.5"
 	},
 	"dependencies": {
-		"express": "^4.17.2"
+		"body-parser": "^1.19.1",
+		"cors": "^2.8.5",
+		"express": "^4.17.2",
+		"express-validator": "^6.14.0",
+		"nodemon": "^2.0.15",
+		"ts-node": "^10.4.0"
 	}
 }
