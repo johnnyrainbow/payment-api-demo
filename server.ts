@@ -1,6 +1,7 @@
 const bodyParser = require('body-parser');
 const express = require('express');
 
+import { Database } from './db/Database';
 import { handleError } from './middleware/errorHandling/errorResponses';
 
 const app = express();
@@ -14,7 +15,8 @@ app.use(
 );
 
 require('./routes/paymentRoutes')(app);
+require('./routes/userRoutes')(app);
 //error handling layer for REST error responses
 app.use(handleError);
-
+Database.loadDBFromJSON();
 app.listen(port, () => console.log(`API listening on port ${port}`));

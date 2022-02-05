@@ -8,7 +8,17 @@ import {
 } from '../controllers/payment';
 
 module.exports = (app: Router) => {
-	app.post('/payments/create', v('create_payment'), validate, submitPayment);
-	app.get('/payments/:id', getPayment);
-	app.patch('/payments/:id', v('update_payment'), validate, updatePayment);
+	app.post(
+		'/payments/create', //naive userid reference
+		v('create_payment'),
+		validate,
+		submitPayment
+	);
+	app.get('/payments/:paymentId', getPayment);
+	app.patch(
+		'/payments/:paymentId', //naive userid reference
+		v('update_payment'),
+		validate,
+		updatePayment
+	);
 };

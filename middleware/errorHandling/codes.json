@@ -1,6 +1,26 @@
 {
 	"NEGATIVE_AMOUNT_INVALID": {
-		"message": "field 'amount' cannot be a negative value",
+		"message": "Field 'amount' cannot be a negative value",
+		"code": 400
+	},
+	"USER_NOT_FOUND": {
+		"message": "User of id '${VALUE}' was not found",
 		"code": 404
+	},
+	"RECIPIENT_USER_NOT_FOUND": {
+		"message": "Beneficiary user of id '${VALUE}' was not found",
+		"code": 404
+	},
+	"PAYMENT_NOT_FOUND": {
+		"message": "Payment of id '${VALUE}' was not found",
+		"code": 404
+	},
+	"INSUFFICIENT_BALANCE": {
+		"message": "You do not have sufficient funds to send this payment",
+		"code": 400
+	},
+	"UNAUTHORIZED_PAYMENT_UPDATE": {
+		"message": "User ${VALUE} does not have permission to update this payment",
+		"code": 401
 	}
 }

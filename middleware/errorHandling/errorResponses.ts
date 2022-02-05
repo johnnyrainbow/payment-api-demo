@@ -4,9 +4,12 @@ import ERRORS from './codes.json';
 export class ResponseError {
 	statusCode: string;
 	message: string;
-	constructor(error: any) {
+	injectedInfo: string;
+
+	constructor(error: any, injectedInfo?: any) {
 		this.statusCode = error.code;
 		this.message = error.message;
+		this.injectedInfo = injectedInfo;
 	}
 }
 
@@ -29,13 +32,16 @@ export const handleError = (
 ) => {
 	const handledError = handleSupportedErrors(err);
 
-	if (handledError)
+	if (handledError) {
+	
+		handledError.message = handledError.message.replace('${VALUE}', handledError.injectedInfo);
 		return send(
 			res,
 			handledError.type,
 			handledError.code,
 			handledError.message
 		);
+	}
 
 	return send(res, 'UNKNOWN ERROR', 500, 'Unknown');
 };
@@ -43,7 +49,12 @@ export const handleError = (
 const handleSupportedErrors = (err: ResponseError) => {
 	for (const error in ERRORS) {
 		if (ERRORS[error].message === err.message)
-			return { type: error, code: ERRORS[error].code, message: err.message };
+			return {
+				type: error,
+				code: ERRORS[error].code,
+				message: err.message,
+				injectedInfo: err.injectedInfo,
+			};
 	}
 	return null;
 };
