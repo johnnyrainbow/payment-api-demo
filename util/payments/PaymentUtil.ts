@@ -19,5 +19,6 @@ export const getPaymentType = (payDate: string) => {
 	//payment is dated for tomorrow, and it is a business day
 	if (day_diff === 1 && isDateBusinessDay(payDateObject)) return SUBTRACT_NOW;
 
+	//anytime futher in the future
 	if (day_diff > 0) return FUTURE;
 };

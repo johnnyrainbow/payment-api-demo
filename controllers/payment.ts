@@ -13,6 +13,15 @@ import User from '../db/tables/User';
 import { FUTURE, INSTANT_SEND, SUBTRACT_NOW } from '../util/PaymentCodes';
 import Payment from '../db/tables/Payment';
 
+/**
+ * REST Controller for submitting a payment, that based on the pay_date, 
+ * can be of paymentTypes: INSTANT, SUBTRACT_NOW, or FUTURE
+ * 
+ * @param req The request object
+ * @param res  The response object
+ * @param next the next function
+
+ */
 export const submitPayment = async function (
 	req: Request,
 	res: Response,
@@ -41,7 +50,7 @@ export const submitPayment = async function (
 
 		if (amount < 0) throw new ResponseError(ERRORS.NEGATIVE_AMOUNT_INVALID);
 
-		//get is payment instant, subtract_now, or future
+		//get is payment INSTANT, SUBTRACT_NOW, or FUTURE
 		const paymentType = getPaymentType(pay_date);
 
 		if (paymentType !== FUTURE && (await user.getBalance()) - amount < 0)
@@ -72,6 +81,19 @@ export const submitPayment = async function (
 	}
 };
 
+/**
+ * Processes a payment, by evaluating the paymentType
+ *
+ * @param paymentType INSTANT, SUBTRACT_NOW, or FUTURE
+ * @param user  the user to withdraw from
+ * @param recipientUserId  the user to deposit to
+ * @param amount  The amount in dollars
+ * @param description  Payment record descriptor
+ * @param beneficiary_name  The name of the beneficiary
+ * @param pay_date  The date of payment to the recipientUser
+ *
+ * @return {Payment} Returns the created payment
+ */
 export const processPayment = async (
 	paymentType: string,
 	user: User,
@@ -81,8 +103,11 @@ export const processPayment = async (
 	beneficiary_name: string,
 	pay_date: string
 ) => {
+	/**
+	 * The INSTANT_SEND code. This payment code refers to any payment that
+	 * either has no pay_date, and is instantaneous, or is a future (2+ days out) payment being executed.
+	 */
 	if (paymentType === INSTANT_SEND) {
-		//update user balances
 		return await instantFundsTransfer(
 			null,
 			user.id,
@@ -91,7 +116,15 @@ export const processPayment = async (
 			description,
 			beneficiary_name
 		);
-	} else if (paymentType === SUBTRACT_NOW) {
+	}
+	/**
+	 * The SUBTRACT_NOW code. This payment code refers to any payment that
+	 * has been passed a pay_date that is for either today, or the next business day.
+	 *
+	 * It indicates that the sender's money has been immediately withdrawn.
+	 * @type {string}
+	 */
+	if (paymentType === SUBTRACT_NOW) {
 		return await debitUser(
 			user.id,
 			recipientUser.id,
@@ -100,7 +133,15 @@ export const processPayment = async (
 			beneficiary_name,
 			pay_date
 		);
-	} else if (paymentType === FUTURE) {
+	}
+	/**
+	 * The FUTURE code. This payment code refers to any payment that
+	 * has been passed a pay_date that is for any future date beyond SUBTRACT_NOW policy
+	 *
+	 * It indicates that no money has been withdrawn from either party, and will not until the cron runs at 4am on pay_date
+	 * @type {string}
+	 */
+	if (paymentType === FUTURE) {
 		return await createFuturePaymentRecord(
 			user.id,
 			recipientUser.id,

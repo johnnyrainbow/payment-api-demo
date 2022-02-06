@@ -1,7 +1,6 @@
 import { Database } from '../../db/Database';
 import Payment from '../../db/tables/Payment';
 import User from '../../db/tables/User';
-import { isDateBusinessDay } from '../DateUtil';
 import {
 	FUTURE,
 	FUTURE_CREDIT_RECIPIENT_COMPLETE,
@@ -9,6 +8,19 @@ import {
 	SUBTRACT_NOW,
 } from '../PaymentCodes';
 
+/**
+ * Performs an credit action to a single recipient user
+ *
+ * Creates a payment record of FUTURE_CREDIT_RECIPIENT_COMPLETE
+ *
+ * @param paymentId  The Id of the future payment record that triggered this transfer
+ * @param userId  the Id of the user to withdraw from
+ * @param recipientUserId  the Id of the user to deposit to
+ * @param amount  The amount in dollars
+ * @param description  Payment record descriptor
+ * @param beneficiary_name  The name of the beneficiary
+ * @return {Payment} Returns the created payment
+ */
 export const creditUser = async (
 	paymentId: string,
 	userId: string,
@@ -28,6 +40,8 @@ export const creditUser = async (
 
 		//update the original payment record with complete true
 		const paymentRecord: Payment = await Database.getPayment(paymentId);
+		if (!paymentRecord) throw new Error('Payment record does not exist');
+
 		await paymentRecord.setCompleted(true);
 
 		//create a new payment record
@@ -45,13 +59,25 @@ export const creditUser = async (
 		await Database.commitTransaction();
 		return payment;
 	} catch (e) {
-		console.log(e);
 		//error, perform rollback
 		await Database.rollbackTransaction();
 		return null;
 	}
 };
 
+/**
+ * Performs an debit/withdraw action against a single user
+ *
+ * Creates a payment record of SUBTRACT_NOW
+ *
+ * @param userId  the Id of the user to withdraw from
+ * @param recipientUserId  the Id of the user to deposit to
+ * @param amount  The amount in dollars
+ * @param description  Payment record descriptor
+ * @param beneficiary_name  The name of the beneficiary
+ * @param pay_date  The date of payment to the recipientUser
+ * @return {Payment} Returns the created payment
+ */
 export const debitUser = async (
 	userId: string,
 	recipientUserId: string,
@@ -90,14 +116,27 @@ export const debitUser = async (
 	}
 };
 
+/**
+ * Performs an instant fund transfer between two parties.
+ *
+ * Creates a payment record of INSTANT
+ *
+ * @param paymentId  If a future record triggered this transfer, pass its payment id. Otherwise null.
+ * @param userId  the Id of the user to withdraw from
+ * @param recipientUserId  the Id of the user to deposit to
+ * @param amount  The amount in dollars
+ * @param description  Payment record descriptor
+ * @param beneficiary_name  The name of the beneficiary
+ * @return {Payment} Returns the created payment
+ */
 export const instantFundsTransfer = async (
-	paymentId: string,
+	paymentId: string | null,
 	userId: string,
 	recipientUserId: string,
 	amount: number,
 	description: string,
 	beneficiary_name: string
-) => {
+): Promise<Payment> => {
 	try {
 		const user: User = await Database.getUser(userId);
 		if (!user) return null;

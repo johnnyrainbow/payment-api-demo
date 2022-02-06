@@ -13,17 +13,12 @@ import {
 } from '../controllers/payment';
 
 module.exports = (app: Router) => {
-	app.post(
-		'/payments/create', //naive userid reference
-		v('create_payment'),
-		validate,
-		submitPayment
-	);
+	app.post('/payments/create', v('create_payment'), validate, submitPayment);
 
 	app.get('/payments/:paymentId', getPayment);
 
 	app.patch(
-		'/payments/:paymentId', //naive userid reference
+		'/payments/:paymentId',
 		v('update_payment'),
 		validate,
 		updatePayment
