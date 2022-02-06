@@ -4,8 +4,8 @@ import { FUTURE, INSTANT_SEND, SUBTRACT_NOW } from '../PaymentCodes';
 export const getPaymentType = (payDate: string) => {
 	if (!payDate) return INSTANT_SEND;
 
-	const payDateObject = new Date(payDate);
-	const now = new Date();
+	const payDateObject: Date = new Date(payDate);
+	const now: Date = new Date();
 
 	// calculate the number of days difference between now and paydate
 	const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds

@@ -11,6 +11,7 @@ import {
 import { getPaymentType } from '../util/payments/PaymentUtil';
 import User from '../db/tables/User';
 import { FUTURE, INSTANT_SEND, SUBTRACT_NOW } from '../util/PaymentCodes';
+import Payment from '../db/tables/Payment';
 
 //TODO UNIT TESTS, postman download
 export const submitPayment = async function (
@@ -24,10 +25,10 @@ export const submitPayment = async function (
 
 		const { userId } = req.query;
 
-		const user = await Database.getUser(userId);
+		const user: User = await Database.getUser(userId);
 		if (!user) throw new ResponseError(ERRORS.USER_NOT_FOUND, userId);
 
-		const recipientUser = await Database.getUser(beneficiary_id);
+		const recipientUser: User = await Database.getUser(beneficiary_id);
 		if (!recipientUser)
 			throw new ResponseError(ERRORS.RECIPIENT_USER_NOT_FOUND, beneficiary_id);
 
@@ -47,7 +48,7 @@ export const submitPayment = async function (
 			//for a non future payment, check that the user has sufficient funds, negative balance not accepted
 			throw new ResponseError(ERRORS.INSUFFICIENT_BALANCE);
 
-		const paymentResult = await processPayment(
+		const paymentResult: any = await processPayment(
 			paymentType,
 			user,
 			recipientUser,
@@ -137,10 +138,10 @@ export const updatePayment = async function (
 		const { userId } = req.query;
 		const { paymentId } = req.params;
 
-		const user = await Database.getUser(userId);
+		const user: User = await Database.getUser(userId);
 		if (!user) throw new ResponseError(ERRORS.USER_NOT_FOUND, userId);
 
-		const payment = await Database.getPayment(paymentId);
+		const payment: Payment = await Database.getPayment(paymentId);
 		if (!payment) throw new ResponseError(ERRORS.PAYMENT_NOT_FOUND, paymentId);
 
 		if ((await payment.getSenderId()) !== userId)
@@ -160,7 +161,7 @@ export const getDueFuturePayments = async function (
 	next: NextFunction
 ) {
 	try {
-		const dueFuturePayments = await Database.getDueFuturePayments();
+		const dueFuturePayments: Payment[] = await Database.getDueFuturePayments();
 
 		return res.status(200).send({ success: true, result: dueFuturePayments });
 	} catch (e) {
@@ -188,7 +189,7 @@ export const getAllPayments = async function (
 	next: NextFunction
 ) {
 	try {
-		const payments = await Database.getPayments();
+		const payments: Map<string, Payment> = await Database.getPayments();
 
 		return res.status(200).send({ success: true, result: payments });
 	} catch (e) {

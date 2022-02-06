@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { ResponseError } from '../middleware/errorHandling/errorResponses';
 import ERRORS from '../middleware/errorHandling/codes.json';
 import { Database } from '../db/Database';
+import User from '../db/tables/User';
 
 export const getUserBalance = async function (
 	req: Request,
@@ -11,7 +12,7 @@ export const getUserBalance = async function (
 	try {
 		const { userId } = req.params;
 
-		const user = await Database.getUser(userId);
+		const user: User = await Database.getUser(userId);
 		if (!user) throw new ResponseError(ERRORS.USER_NOT_FOUND, userId);
 
 		return res

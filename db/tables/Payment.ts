@@ -9,8 +9,8 @@ export default class Payment {
 	amount: number;
 	description: string;
 	beneficiary_name: string;
-	senderId: number;
-	receiverId: number;
+	senderId: string;
+	receiverId: string;
 	paymentType: string;
 	payDate: string;
 	completed: boolean;

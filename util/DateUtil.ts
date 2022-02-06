@@ -8,13 +8,13 @@ export const isValidDateFormat = (dateString: string) => {
 };
 
 export const isDateBusinessDay = (dateObject: Date) => {
-	var dayOfWeek = dateObject.getDay();
-	var isWeekend = dayOfWeek === 6 || dayOfWeek === 0; // 6 = Saturday, 0 = Sunday
+	var dayOfWeek: number = dateObject.getDay();
+	var isWeekend: boolean = dayOfWeek === 6 || dayOfWeek === 0; // 6 = Saturday, 0 = Sunday
 
 	return !isWeekend;
 };
 export const isDateToday = (dateObject: Date) => {
-	const today = new Date();
+	const today: Date = new Date();
 	return (
 		dateObject.getDate() == today.getDate() &&
 		dateObject.getMonth() == today.getMonth() &&
@@ -22,7 +22,7 @@ export const isDateToday = (dateObject: Date) => {
 	);
 };
 export const isDateInPast = (dateString: string) => {
-	const dateObject = new Date(dateString);
-	const now = new Date();
+	const dateObject: Date = new Date(dateString);
+	const now: Date = new Date();
 	if (dateObject < now && !isDateToday(dateObject)) return true;
 };

@@ -1,4 +1,6 @@
 import { Database } from '../../db/Database';
+import Payment from '../../db/tables/Payment';
+import User from '../../db/tables/User';
 import { isDateBusinessDay } from '../DateUtil';
 import {
 	FUTURE,
@@ -16,20 +18,20 @@ export const creditUser = async (
 	beneficiary_name: string
 ) => {
 	try {
-		const recipientUser = await Database.getUser(recipientUserId);
+		const recipientUser: User = await Database.getUser(recipientUserId);
 		if (!recipientUserId) return null;
 
 		//perform ACID transaction
 		await Database.startTransaction();
 
-		recipientUser.addBalance(amount);
+		await recipientUser.addBalance(amount);
 
 		//update the original payment record with complete true
-		const paymentRecord = await Database.getPayment(paymentId);
+		const paymentRecord: Payment = await Database.getPayment(paymentId);
 		await paymentRecord.setCompleted(true);
 
 		//create a new payment record
-		const payment = await Database.createPaymentRecord(
+		const payment: Payment = await Database.createPaymentRecord(
 			null,
 			amount,
 			description,
@@ -59,7 +61,7 @@ export const debitUser = async (
 	pay_date: string
 ) => {
 	try {
-		const user = await Database.getUser(userId);
+		const user: User = await Database.getUser(userId);
 		if (!user) return null;
 
 		//perform ACID transaction
@@ -68,7 +70,7 @@ export const debitUser = async (
 		await user.subtractBalance(amount);
 
 		//create the payment record
-		const payment = await Database.createPaymentRecord(
+		const payment: Payment = await Database.createPaymentRecord(
 			null,
 			amount,
 			description,
@@ -97,10 +99,10 @@ export const instantFundsTransfer = async (
 	beneficiary_name: string
 ) => {
 	try {
-		const user = await Database.getUser(userId);
+		const user: User = await Database.getUser(userId);
 		if (!user) return null;
 
-		const recipientUser = await Database.getUser(recipientUserId);
+		const recipientUser: User = await Database.getUser(recipientUserId);
 		if (!recipientUser) return null;
 
 		//perform ACID transaction
@@ -119,7 +121,7 @@ export const instantFundsTransfer = async (
 			await paymentRecord.setCompleted(true);
 		}
 		//create the payment record
-		const payment = await Database.createPaymentRecord(
+		const payment: Payment = await Database.createPaymentRecord(
 			null,
 			amount,
 			description,
@@ -148,14 +150,14 @@ export const createFuturePaymentRecord = async (
 	beneficiary_name: string,
 	pay_date: string
 ) => {
-	const user = await Database.getUser(userId);
+	const user: User = await Database.getUser(userId);
 	if (!user) return null;
 
-	const recipientUser = await Database.getUser(recipientUserId);
+	const recipientUser: User = await Database.getUser(recipientUserId);
 	if (!recipientUser) return null;
 
 	//create the payment record
-	const payment = await Database.createPaymentRecord(
+	const payment: Payment = await Database.createPaymentRecord(
 		null,
 		amount,
 		description,

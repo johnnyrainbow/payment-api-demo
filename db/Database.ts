@@ -13,7 +13,7 @@ export class Database {
 
 	//only runs at 4am
 	static async scheduleFuturePaymentCron() {
-		const dueFuturePayments = await Database.getDueFuturePayments();
+		const dueFuturePayments: Payment[] = await Database.getDueFuturePayments();
 
 		for (const payment of dueFuturePayments) {
 			const {
@@ -75,15 +75,15 @@ export class Database {
 	static async getDueFuturePayments() {
 		//would usually be an SQL select
 
-		const payments = await Database.getPayments();
-		const paymentArray = [];
+		const payments: Map<string, Payment> = await Database.getPayments();
+		const paymentArray: Payment[] = [];
 		for (const key in payments) paymentArray.push(payments[key]);
 
 		return paymentArray.filter((payment) => {
 			//get payments that are not completed, and are to be run today
 			if (payment.completed === false) {
-				const dateObject = new Date(payment.payDate);
-				return true;
+				const dateObject: Date = new Date(payment.payDate);
+				return isDateToday(dateObject);
 			}
 		});
 	}
