@@ -4,7 +4,6 @@ export default class User {
 	id: string;
 	name: string;
 	balance: number;
-	randomVal: boolean;
 
 	constructor(id, name, balance) {
 		this.id = id === null || id === undefined ? shortid() : id;
@@ -12,15 +11,19 @@ export default class User {
 		this.balance = balance || 0;
 	}
 
-	subtractBalance(amount: number) {
+	async subtractBalance(amount: number) {
 		this.balance -= amount;
 	}
-	addBalance(amount: number) {
+	async addBalance(amount: number) {
 		this.balance += amount;
 	}
-	getBalance() {
+	async getBalance() {
 		return this.balance;
 	}
-	setName() {}
-	getName() {}
+	async getName() {
+		return this.name;
+	}
+	async setName(newName) {
+		this.name = newName;
+	}
 }

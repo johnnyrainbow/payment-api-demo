@@ -2,13 +2,11 @@
 	{
 		"id": "VQyftQazB",
 		"name": "Gabriel",
-		"balance": 1000,
-		"sent_payments": []
+		"balance": 1000
 	},
 	{
 		"id": "AwSLfAsEf",
 		"name": "Matt",
-		"balance": 500,
-		"sent_payments": []
+		"balance": 0
 	}
 ]

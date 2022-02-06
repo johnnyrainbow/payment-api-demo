@@ -9,6 +9,7 @@ export default (method: string) => {
 				body('amount').exists().isNumeric(),
 				body('beneficiary_name').exists().isLength({ max: 32 }),
 				body('description').exists().isLength({ max: 300 }),
+				body('pay_date').optional(),
 			];
 
 		case 'update_payment':

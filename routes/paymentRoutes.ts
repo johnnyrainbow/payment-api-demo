@@ -5,6 +5,9 @@ import {
 	submitPayment,
 	getPayment,
 	updatePayment,
+	getDueFuturePayments,
+	runDueFuturePayments,
+	getAllPayments
 } from '../controllers/payment';
 
 module.exports = (app: Router) => {
@@ -21,4 +24,7 @@ module.exports = (app: Router) => {
 		validate,
 		updatePayment
 	);
+	app.get('/payments', getAllPayments);
+	app.get('/payments/future/upcoming', getDueFuturePayments);
+	app.post('/payments/future/upcoming', runDueFuturePayments);
 };

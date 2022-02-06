@@ -1,27 +1,100 @@
 import importUsers from './users.json';
 import User from './tables/User';
 import Payment from './tables/Payment';
+import { isDateToday } from '../util/DateUtil';
+import { creditUser, instantFundsTransfer } from '../util/payments/PaymentCore';
+
 //Just a psuedo DB in memory
 
 export class Database {
 	static users: Map<string, User> = new Map<string, User>();
 	static payments: Map<string, Payment> = new Map<string, Payment>();
-	static startTransaction() {
+
+	//only runs at 4am
+	static async scheduleFuturePaymentCron() {
+		const dueFuturePayments = await Database.getDueFuturePayments();
+
+		for (const payment of dueFuturePayments) {
+			const {
+				senderId,
+				receiverId,
+				amount,
+				description,
+				beneficiary_name,
+				payDate,
+			} = payment;
+
+			if (payment.paymentType === 'FUTURE') {
+				//perform the full payment logic
+				await instantFundsTransfer(
+					payment.id,
+					senderId,
+					receiverId,
+					amount,
+					description,
+					beneficiary_name
+				);
+			} else if (payment.paymentType === 'SUBTRACT_NOW') {
+				//perform a creditRecipient logic, as the funds have already been subtracted
+
+				await creditUser(
+					payment.id,
+					senderId,
+					receiverId,
+					amount,
+					description,
+					beneficiary_name
+				);
+			}
+		}
+	}
+
+	static async startTransaction() {
 		//ACID TRANSACTION STUB
 	}
-	static commitTransaction() {
+	static async commitTransaction() {
 		//ACID TRANSACTION STUB
 	}
-	static rollbackTransaction() {
+	static async rollbackTransaction() {
 		//ACID TRANSACTION STUB
 	}
-	static createPaymentRecord(
+
+	static async getUser(id: any) {
+		return Database.users[id];
+	}
+	static async getPayment(id: any) {
+		return Database.payments[id];
+	}
+	static async getUsers() {
+		return Database.users;
+	}
+	static async getPayments() {
+		return Database.payments;
+	}
+	static async getDueFuturePayments() {
+		//would usually be an SQL select
+
+		const payments = await Database.getPayments();
+		const paymentArray = [];
+		for (const key in payments) paymentArray.push(payments[key]);
+
+		return paymentArray.filter((payment) => {
+			//get payments that are not completed, and are to be run today
+			if (payment.completed === false) {
+				const dateObject = new Date(payment.payDate);
+				return true;
+			}
+		});
+	}
+	static async createPaymentRecord(
 		id,
 		amount,
 		description,
 		beneficiary_name,
 		senderId,
-		receiverId
+		receiverId,
+		paymentType,
+		payDate
 	) {
 		const payment = new Payment(
 			id,
@@ -29,24 +102,13 @@ export class Database {
 			description,
 			beneficiary_name,
 			senderId,
-			receiverId
+			receiverId,
+			paymentType,
+			payDate
 		);
 		Database.payments[payment.id] = payment;
 
 		return payment;
-	}
-
-	static getUser(id: any) {
-		return Database.users[id];
-	}
-	static getPayment(id: any) {
-		return Database.payments[id];
-	}
-	static getUsers() {
-		return Database.users;
-	}
-	static getPayments() {
-		return Database.payments;
 	}
 	static loadDBFromJSON() {
 		for (const user of importUsers) {

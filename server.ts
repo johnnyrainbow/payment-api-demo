@@ -16,7 +16,13 @@ app.use(
 
 require('./routes/paymentRoutes')(app);
 require('./routes/userRoutes')(app);
+
 //error handling layer for REST error responses
 app.use(handleError);
+
 Database.loadDBFromJSON();
+
+//start nightly 4am future payment cron process
+Database.scheduleFuturePaymentCron();
+
 app.listen(port, () => console.log(`API listening on port ${port}`));

@@ -22,5 +22,13 @@
 	"UNAUTHORIZED_PAYMENT_UPDATE": {
 		"message": "User ${VALUE} does not have permission to update this payment",
 		"code": 401
+	},
+	"INVALID_PAY_DATE_FORMAT": {
+		"message": "Passed date ${VALUE} does not conform to required pay_date YYYY-MM-DD format",
+		"code": 401
+	},
+	"INVALID_PAY_DATE_RANGE": {
+		"message": "Passed date ${VALUE} is not a future date",
+		"code": 401
 	}
 }

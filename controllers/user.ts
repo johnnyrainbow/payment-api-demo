@@ -11,12 +11,12 @@ export const getUserBalance = async function (
 	try {
 		const { userId } = req.params;
 
-		const user = Database.getUser(userId);
+		const user = await Database.getUser(userId);
 		if (!user) throw new ResponseError(ERRORS.USER_NOT_FOUND, userId);
 
 		return res
 			.status(200)
-			.send({ success: true, result: { balance: user.getBalance() } });
+			.send({ success: true, result: { balance: await user.getBalance() } });
 	} catch (e) {
 		return next(e); //forward to error handler middleware
 	}

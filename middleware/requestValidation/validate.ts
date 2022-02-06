@@ -6,10 +6,10 @@ export const validate = (input: any, res: Response, next: NextFunction) => {
 
 	if (errors.isEmpty()) return next();
 
-	const extractedErrors: Array<object> = [];
+	const extractedErrors: Array<any> = [];
 	errors.array().map((err: any) => {
 		if (
-			extractedErrors.filter((item) => Object.keys(item)[0] === err.param)
+			extractedErrors.filter((item) => item.param === err.param)
 				.length === 0
 		)
 			//filter out multiple of same field errors

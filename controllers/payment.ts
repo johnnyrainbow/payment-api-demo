@@ -2,63 +2,110 @@ import { Request, Response, NextFunction } from 'express';
 import { ResponseError } from '../middleware/errorHandling/errorResponses';
 import ERRORS from '../middleware/errorHandling/codes.json';
 import { Database } from '../db/Database';
+import { isDateInPast, isValidDateFormat } from '../util/DateUtil';
+import {
+	createFuturePaymentRecord,
+	debitUser,
+	instantFundsTransfer,
+} from '../util/payments/PaymentCore';
+import { getPaymentType } from '../util/payments/PaymentUtil';
 
+//TODO UNIT TESTS, postman download
 export const submitPayment = async function (
 	req: Request,
 	res: Response,
 	next: NextFunction
 ) {
 	try {
-		const { amount, description, beneficiary_name, beneficiary_id } = req.body;
+		const { pay_date, amount, description, beneficiary_name, beneficiary_id } =
+			req.body;
+
 		const { userId } = req.query;
 
-		const user = Database.getUser(userId);
+		const user = await Database.getUser(userId);
 		if (!user) throw new ResponseError(ERRORS.USER_NOT_FOUND, userId);
 
-		const recipientUser = Database.getUser(beneficiary_id);
+		const recipientUser = await Database.getUser(beneficiary_id);
 		if (!recipientUser)
 			throw new ResponseError(ERRORS.RECIPIENT_USER_NOT_FOUND, beneficiary_id);
 
+		if (pay_date)
+			if (!isValidDateFormat(pay_date))
+				throw new ResponseError(ERRORS.INVALID_PAY_DATE_FORMAT, pay_date);
+
+		if (isDateInPast(pay_date))
+			throw new ResponseError(ERRORS.INVALID_PAY_DATE_RANGE, pay_date);
+
 		if (amount < 0) throw new ResponseError(ERRORS.NEGATIVE_AMOUNT_INVALID);
 
-		try {
-			//perform ACID transaction
-			Database.startTransaction();
+		//get is payment instant, subtract_now, or future
+		const paymentType = getPaymentType(pay_date);
 
-			if (user.getBalance() - amount < 0)
-				//check that the user has sufficient funds, negative balance not accepted
-				throw new ResponseError(ERRORS.INSUFFICIENT_BALANCE);
+		if (paymentType !== 'FUTURE' && (await user.getBalance()) - amount < 0)
+			//for a non future payment, check that the user has sufficient funds, negative balance not accepted
+			throw new ResponseError(ERRORS.INSUFFICIENT_BALANCE);
 
-			//update user balances
-			user.subtractBalance(amount);
-			recipientUser.addBalance(amount);
+		const paymentResult = await processPayment(
+			paymentType,
+			user,
+			recipientUser,
+			amount,
+			description,
+			beneficiary_name,
+			pay_date
+		);
 
-			//create the payment record
-			const payment = Database.createPaymentRecord(
-				null,
-				amount,
-				description,
-				beneficiary_name,
-				userId,
-				beneficiary_id
-			);
-
-			Database.commitTransaction();
-
-			return res
-				.status(200)
-				.send({ success: true, result: { paymentId: payment.id } });
-		} catch (e) {
-			//error, perform rollback
-			Database.rollbackTransaction();
-		}
-		return res.status(500).send({
-			success: false,
-			error:
-				'Something went wrong attempting to send your payment, please try again later',
-		});
+		return paymentResult
+			? res
+					.status(200)
+					.send({ success: true, result: { paymentId: paymentResult.id } })
+			: res.status(500).send({
+					success: false,
+					error:
+						'Something went wrong attempting to send your payment, please try again later',
+			  });
 	} catch (e) {
 		return next(e); //forward to error handler middleware
+	}
+};
+
+export const processPayment = async (
+	paymentType,
+	user,
+	recipientUser,
+	amount,
+	description,
+	beneficiary_name,
+	pay_date: string
+) => {
+	if (paymentType === 'INSTANT') {
+		//update user balances
+		return await instantFundsTransfer(
+			null,
+			user.id,
+			recipientUser.id,
+			amount,
+			description,
+			beneficiary_name
+		);
+	} else if (paymentType === 'SUBTRACT_NOW') {
+		return await debitUser(
+			user.id,
+			recipientUser.id,
+			amount,
+			description,
+			beneficiary_name,
+			pay_date
+		);
+	} else if (paymentType === 'FUTURE') {
+		return await createFuturePaymentRecord(
+			user.id,
+			recipientUser.id,
+			amount,
+			description,
+			beneficiary_name,
+			pay_date
+		);
 	}
 };
 
@@ -69,7 +116,7 @@ export const getPayment = async function (
 ) {
 	try {
 		const { paymentId } = req.params;
-		const payment = Database.getPayment(paymentId);
+		const payment = await Database.getPayment(paymentId);
 		if (!payment) throw new ResponseError(ERRORS.PAYMENT_NOT_FOUND, paymentId);
 
 		return res.status(200).send({ success: true, result: { payment } });
@@ -88,18 +135,60 @@ export const updatePayment = async function (
 		const { userId } = req.query;
 		const { paymentId } = req.params;
 
-		const user = Database.getUser(userId);
+		const user = await Database.getUser(userId);
 		if (!user) throw new ResponseError(ERRORS.USER_NOT_FOUND, userId);
 
-		const payment = Database.getPayment(paymentId);
+		const payment = await Database.getPayment(paymentId);
 		if (!payment) throw new ResponseError(ERRORS.PAYMENT_NOT_FOUND, paymentId);
 
-		if (payment.getSenderId() !== userId)
+		if ((await payment.getSenderId()) !== userId)
 			throw new ResponseError(ERRORS.UNAUTHORIZED_PAYMENT_UPDATE, userId);
 
-		payment.setDescription(description);
+		await payment.setDescription(description);
 
 		return res.status(200).send({ success: true, result: { payment } });
+	} catch (e) {
+		return next(e); //forward to error handler middleware
+	}
+};
+
+export const getDueFuturePayments = async function (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) {
+	try {
+		const dueFuturePayments = await Database.getDueFuturePayments();
+
+		return res.status(200).send({ success: true, result: dueFuturePayments });
+	} catch (e) {
+		return next(e); //forward to error handler middleware
+	}
+};
+
+export const runDueFuturePayments = async function (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) {
+	try {
+		await Database.scheduleFuturePaymentCron();
+
+		return res.status(200).send({ success: true });
+	} catch (e) {
+		return next(e); //forward to error handler middleware
+	}
+};
+
+export const getAllPayments = async function (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) {
+	try {
+		const payments = await Database.getPayments();
+
+		return res.status(200).send({ success: true, result: payments });
 	} catch (e) {
 		return next(e); //forward to error handler middleware
 	}
