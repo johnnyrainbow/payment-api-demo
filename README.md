@@ -38,8 +38,8 @@ Note: Some endpoints will require userId to be passed in naively as a URL query 
 
 `POST /payments/create?userId=:userId`
 
-```json
-Request Body: {
+```javascript
+ Body: {
 
     "amount": 100, //the amount to send
     "description": "Some description", //payment description
@@ -51,7 +51,7 @@ Request Body: {
 
 Additionally you can include the optional Body parameter 'pay_date', with the YYYY-MM-DD format to schedule this payment.
 
-```json
+```javascript
 {
 	"pay_date": "2024-06-10" //OPTIONAL - the future date to schedule this payment
 }
@@ -109,9 +109,8 @@ Retrieves the details of a payment record
 {
 	"success": true,
 	"result": {
-			"id": "vLajsqxIm",
-			"amount": 100,
-            ...
+		"id": "vLajsqxIm",
+		"amount": 100
 	}
 }
 ```
@@ -134,10 +133,9 @@ Returns the updated payment record
 	"result": {
 		"payment": {
 			"id": "vLajsqxIm",
-			"amount": 100,
-            ...
+			"amount": 100
 		}
-    }
+	}
 }
 ```
 
@@ -153,14 +151,13 @@ Gets a list of all payment records
 
 ```json
 {
-    "success": true,
-    "result": [
-        {
-            "id": "VddFbA5Hf",
-            "amount": 100,
-            ...
-        },
-    ]
+	"success": true,
+	"result": [
+		{
+			"id": "VddFbA5Hf",
+			"amount": 100
+		}
+	]
 }
 ```
 
@@ -174,14 +171,13 @@ Gets all future payments that will run today
 
 ```json
 {
-    "success": true,
-    "result": [
-        {
-            "id": "VddFbA5Hf",
-            "amount": 100,
-            ...
-        },
-    ]
+	"success": true,
+	"result": [
+		{
+			"id": "VddFbA5Hf",
+			"amount": 100
+		}
+	]
 }
 ```
 
@@ -191,8 +187,8 @@ Gets all future payments that will run today
 
 `POST /payments/future/upcoming`
 
-```json
-Request Body: null
+```javascript
+Body: null;
 ```
 
 Runs all upcoming payments scheduled for today
@@ -217,14 +213,13 @@ Gets all future payments
 
 ```json
 {
-    "success": true,
-    "result": [
-        {
-            "id": "VddFbA5Hf",
-            "amount": 100,
-            ...
-        },
-    ]
+	"success": true,
+	"result": [
+		{
+			"id": "VddFbA5Hf",
+			"amount": 100
+		}
+	]
 }
 ```
 
@@ -234,8 +229,8 @@ Gets all future payments
 
 `POST /payments/future/all`
 
-```json
-Request Body: null
+```javascript
+Body: null;
 ```
 
 Runs all upcoming payments scheduled, regardless of if they should run today
