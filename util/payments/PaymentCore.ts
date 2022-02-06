@@ -1,13 +1,17 @@
 import { Database } from '../../db/Database';
 import { isDateBusinessDay } from '../DateUtil';
+import {
+	FUTURE_CREDIT_RECIPIENT_COMPLETE,
+	SUBTRACT_NOW,
+} from '../PaymentCodes';
 
 export const creditUser = async (
-	paymentId,
-	userId,
-	recipientUserId,
-	amount,
-	description,
-	beneficiary_name
+	paymentId: string,
+	userId: string,
+	recipientUserId: string,
+	amount: number,
+	description: string,
+	beneficiary_name: string
 ) => {
 	try {
 		const recipientUser = await Database.getUser(recipientUserId);
@@ -30,7 +34,7 @@ export const creditUser = async (
 			beneficiary_name,
 			userId,
 			recipientUserId,
-			'FUTURE_CREDIT_RECIPIENT_COMPLETE',
+			FUTURE_CREDIT_RECIPIENT_COMPLETE,
 			null
 		);
 
@@ -45,11 +49,11 @@ export const creditUser = async (
 };
 
 export const debitUser = async (
-	userId,
-	recipientUserId,
-	amount,
-	description,
-	beneficiary_name,
+	userId: string,
+	recipientUserId: string,
+	amount: number,
+	description: string,
+	beneficiary_name: string,
 	pay_date: string
 ) => {
 	try {
@@ -69,7 +73,7 @@ export const debitUser = async (
 			beneficiary_name,
 			userId,
 			recipientUserId,
-			'SUBTRACT_NOW',
+			SUBTRACT_NOW,
 			pay_date
 		);
 
@@ -83,12 +87,12 @@ export const debitUser = async (
 };
 
 export const instantFundsTransfer = async (
-	paymentId,
-	userId,
-	recipientUserId,
-	amount,
-	description,
-	beneficiary_name
+	paymentId: string,
+	userId: string,
+	recipientUserId: string,
+	amount: number,
+	description: string,
+	beneficiary_name: string
 ) => {
 	try {
 		const user = await Database.getUser(userId);
@@ -135,11 +139,11 @@ export const instantFundsTransfer = async (
 };
 
 export const createFuturePaymentRecord = async (
-	userId,
-	recipientUserId,
-	amount,
-	description,
-	beneficiary_name,
+	userId: string,
+	recipientUserId: string,
+	amount: number,
+	description: string,
+	beneficiary_name: string,
 	pay_date: string
 ) => {
 	const user = await Database.getUser(userId);

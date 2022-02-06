@@ -9,6 +9,8 @@ import {
 	instantFundsTransfer,
 } from '../util/payments/PaymentCore';
 import { getPaymentType } from '../util/payments/PaymentUtil';
+import User from '../db/tables/User';
+import { FUTURE, INSTANT_SEND, SUBTRACT_NOW } from '../util/PaymentCodes';
 
 //TODO UNIT TESTS, postman download
 export const submitPayment = async function (
@@ -70,15 +72,15 @@ export const submitPayment = async function (
 };
 
 export const processPayment = async (
-	paymentType,
-	user,
-	recipientUser,
-	amount,
-	description,
-	beneficiary_name,
+	paymentType: string,
+	user: User,
+	recipientUser: User,
+	amount: number,
+	description: string,
+	beneficiary_name: string,
 	pay_date: string
 ) => {
-	if (paymentType === 'INSTANT') {
+	if (paymentType === INSTANT_SEND) {
 		//update user balances
 		return await instantFundsTransfer(
 			null,
@@ -88,7 +90,7 @@ export const processPayment = async (
 			description,
 			beneficiary_name
 		);
-	} else if (paymentType === 'SUBTRACT_NOW') {
+	} else if (paymentType === SUBTRACT_NOW) {
 		return await debitUser(
 			user.id,
 			recipientUser.id,
@@ -97,7 +99,7 @@ export const processPayment = async (
 			beneficiary_name,
 			pay_date
 		);
-	} else if (paymentType === 'FUTURE') {
+	} else if (paymentType === FUTURE) {
 		return await createFuturePaymentRecord(
 			user.id,
 			recipientUser.id,

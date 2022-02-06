@@ -7,7 +7,7 @@ import {
 	updatePayment,
 	getDueFuturePayments,
 	runDueFuturePayments,
-	getAllPayments
+	getAllPayments,
 } from '../controllers/payment';
 
 module.exports = (app: Router) => {
@@ -17,14 +17,18 @@ module.exports = (app: Router) => {
 		validate,
 		submitPayment
 	);
+
 	app.get('/payments/:paymentId', getPayment);
+
 	app.patch(
 		'/payments/:paymentId', //naive userid reference
 		v('update_payment'),
 		validate,
 		updatePayment
 	);
+
 	app.get('/payments', getAllPayments);
+
 	app.get('/payments/future/upcoming', getDueFuturePayments);
 	app.post('/payments/future/upcoming', runDueFuturePayments);
 };
