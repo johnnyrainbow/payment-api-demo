@@ -1,4 +1,8 @@
 import shortid from 'shortid';
+import {
+	FUTURE_CREDIT_RECIPIENT_COMPLETE,
+	INSTANT_SEND,
+} from '../../util/PaymentCodes';
 
 export default class Payment {
 	id: string;
@@ -32,8 +36,8 @@ export default class Payment {
 		this.paymentType = paymentType;
 		this.payDate = payDate;
 		this.completed =
-			paymentType === 'INSTANT' ||
-			paymentType === 'FUTURE_CREDIT_RECIPIENT_COMPLETE';
+			paymentType === INSTANT_SEND ||
+			paymentType === FUTURE_CREDIT_RECIPIENT_COMPLETE;
 		this.createdAt = new Date().toISOString();
 		this.updatedAt;
 	}

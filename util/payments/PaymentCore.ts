@@ -1,7 +1,9 @@
 import { Database } from '../../db/Database';
 import { isDateBusinessDay } from '../DateUtil';
 import {
+	FUTURE,
 	FUTURE_CREDIT_RECIPIENT_COMPLETE,
+	INSTANT_SEND,
 	SUBTRACT_NOW,
 } from '../PaymentCodes';
 
@@ -124,7 +126,7 @@ export const instantFundsTransfer = async (
 			beneficiary_name,
 			user.id,
 			recipientUser.id,
-			'INSTANT',
+			INSTANT_SEND,
 			null
 		);
 
@@ -160,7 +162,7 @@ export const createFuturePaymentRecord = async (
 		beneficiary_name,
 		user.id,
 		recipientUser.id,
-		'FUTURE',
+		FUTURE,
 		pay_date
 	);
 

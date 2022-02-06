@@ -3,6 +3,7 @@ import User from './tables/User';
 import Payment from './tables/Payment';
 import { isDateToday } from '../util/DateUtil';
 import { creditUser, instantFundsTransfer } from '../util/payments/PaymentCore';
+import { FUTURE, SUBTRACT_NOW } from '../util/PaymentCodes';
 
 //Just a psuedo DB in memory
 
@@ -24,7 +25,7 @@ export class Database {
 				payDate,
 			} = payment;
 
-			if (payment.paymentType === 'FUTURE') {
+			if (payment.paymentType === FUTURE) {
 				//perform the full payment logic
 				await instantFundsTransfer(
 					payment.id,
@@ -34,7 +35,7 @@ export class Database {
 					description,
 					beneficiary_name
 				);
-			} else if (payment.paymentType === 'SUBTRACT_NOW') {
+			} else if (payment.paymentType === SUBTRACT_NOW) {
 				//perform a creditRecipient logic, as the funds have already been subtracted
 
 				await creditUser(

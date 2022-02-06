@@ -43,7 +43,7 @@ export const submitPayment = async function (
 		//get is payment instant, subtract_now, or future
 		const paymentType = getPaymentType(pay_date);
 
-		if (paymentType !== 'FUTURE' && (await user.getBalance()) - amount < 0)
+		if (paymentType !== FUTURE && (await user.getBalance()) - amount < 0)
 			//for a non future payment, check that the user has sufficient funds, negative balance not accepted
 			throw new ResponseError(ERRORS.INSUFFICIENT_BALANCE);
 
