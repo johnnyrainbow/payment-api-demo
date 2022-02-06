@@ -11,46 +11,6 @@ export class Database {
 	static users: Map<string, User> = new Map<string, User>();
 	static payments: Map<string, Payment> = new Map<string, Payment>();
 
-	//only runs at 4am
-	static async scheduleFuturePaymentCron(onlyDuePayments: boolean) {
-		const dueFuturePayments: Payment[] = await Database.getFuturePayments(
-			onlyDuePayments
-		);
-
-		for (const payment of dueFuturePayments) {
-			const {
-				senderId,
-				receiverId,
-				amount,
-				description,
-				beneficiary_name,
-				payDate,
-			} = payment;
-
-			if (payment.paymentType === FUTURE) {
-				//perform the full payment logic
-				await instantFundsTransfer(
-					payment.id,
-					senderId,
-					receiverId,
-					amount,
-					description,
-					beneficiary_name
-				);
-			} else if (payment.paymentType === SUBTRACT_NOW) {
-				//perform a creditRecipient logic, as the funds have already been subtracted
-
-				await creditUser(
-					payment.id,
-					senderId,
-					receiverId,
-					amount,
-					description,
-					beneficiary_name
-				);
-			}
-		}
-	}
 	//psuedo async
 	static async startTransaction() {
 		//ACID TRANSACTION STUB
@@ -124,6 +84,46 @@ export class Database {
 	static loadDBFromJSON() {
 		for (const user of importUsers) {
 			Database.users[user.id] = new User(user.id, user.name, user.balance);
+		}
+	}
+	//only runs at 4am
+	static async scheduleFuturePaymentCron(onlyDuePayments: boolean) {
+		const dueFuturePayments: Payment[] = await Database.getFuturePayments(
+			onlyDuePayments
+		);
+
+		for (const payment of dueFuturePayments) {
+			const {
+				senderId,
+				receiverId,
+				amount,
+				description,
+				beneficiary_name,
+				payDate,
+			} = payment;
+
+			if (payment.paymentType === FUTURE) {
+				//perform the full payment logic
+				await instantFundsTransfer(
+					payment.id,
+					senderId,
+					receiverId,
+					amount,
+					description,
+					beneficiary_name
+				);
+			} else if (payment.paymentType === SUBTRACT_NOW) {
+				//perform a creditRecipient logic, as the funds have already been subtracted
+
+				await creditUser(
+					payment.id,
+					senderId,
+					receiverId,
+					amount,
+					description,
+					beneficiary_name
+				);
+			}
 		}
 	}
 }
