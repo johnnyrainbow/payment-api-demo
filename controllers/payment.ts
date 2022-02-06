@@ -13,7 +13,6 @@ import User from '../db/tables/User';
 import { FUTURE, INSTANT_SEND, SUBTRACT_NOW } from '../util/PaymentCodes';
 import Payment from '../db/tables/Payment';
 
-//TODO UNIT TESTS, postman download
 export const submitPayment = async function (
 	req: Request,
 	res: Response,
@@ -32,12 +31,13 @@ export const submitPayment = async function (
 		if (!recipientUser)
 			throw new ResponseError(ERRORS.RECIPIENT_USER_NOT_FOUND, beneficiary_id);
 
-		if (pay_date)
+		if (pay_date) {
 			if (!isValidDateFormat(pay_date))
 				throw new ResponseError(ERRORS.INVALID_PAY_DATE_FORMAT, pay_date);
 
-		if (isDateInPast(pay_date))
-			throw new ResponseError(ERRORS.INVALID_PAY_DATE_RANGE, pay_date);
+			if (isDateInPast(pay_date))
+				throw new ResponseError(ERRORS.INVALID_PAY_DATE_RANGE, pay_date);
+		}
 
 		if (amount < 0) throw new ResponseError(ERRORS.NEGATIVE_AMOUNT_INVALID);
 
@@ -161,7 +161,22 @@ export const getDueFuturePayments = async function (
 	next: NextFunction
 ) {
 	try {
-		const dueFuturePayments: Payment[] = await Database.getDueFuturePayments();
+		const dueFuturePayments: Payment[] = await Database.getFuturePayments(true);
+
+		return res.status(200).send({ success: true, result: dueFuturePayments });
+	} catch (e) {
+		return next(e); //forward to error handler middleware
+	}
+};
+export const getAllFuturePayments = async function (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) {
+	try {
+		const dueFuturePayments: Payment[] = await Database.getFuturePayments(
+			false
+		);
 
 		return res.status(200).send({ success: true, result: dueFuturePayments });
 	} catch (e) {
@@ -175,7 +190,21 @@ export const runDueFuturePayments = async function (
 	next: NextFunction
 ) {
 	try {
-		await Database.scheduleFuturePaymentCron();
+		await Database.scheduleFuturePaymentCron(true);
+
+		return res.status(200).send({ success: true });
+	} catch (e) {
+		return next(e); //forward to error handler middleware
+	}
+};
+
+export const runAllFuturePayments = async function (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) {
+	try {
+		await Database.scheduleFuturePaymentCron(false);
 
 		return res.status(200).send({ success: true });
 	} catch (e) {

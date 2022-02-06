@@ -41,31 +41,40 @@ export default class Payment {
 		this.createdAt = new Date().toISOString();
 		this.updatedAt;
 	}
+	//psuedo async
 	async getId() {
 		return this.id;
 	}
+	//psuedo async
 	async getAmount() {
 		return this.amount;
 	}
+	//psuedo async
 	async getDescription() {
 		return this.description;
 	}
+	//psuedo async
 	async getSenderId() {
 		return this.senderId;
 	}
+	//psuedo async
 	async getReceiverId() {
 		return this.receiverId;
 	}
+	//psuedo async
 	async getPaymentType() {
 		return this.paymentType;
 	}
+	//psuedo async
 	async getPayDate() {
 		return this.payDate;
 	}
+	//psuedo async
 	async setDescription(newDescription) {
 		this.description = newDescription;
 		this.updatedAt = new Date().toISOString();
 	}
+	//psuedo async
 	async setCompleted(isCompleted: boolean) {
 		this.completed = isCompleted;
 		this.updatedAt = new Date().toISOString();

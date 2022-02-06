@@ -10,19 +10,23 @@ export default class User {
 		this.name = name;
 		this.balance = balance || 0;
 	}
-
+	//psuedo async
 	async subtractBalance(amount: number) {
 		this.balance -= amount;
 	}
+	//psuedo async
 	async addBalance(amount: number) {
 		this.balance += amount;
 	}
+	//psuedo async
 	async getBalance() {
 		return this.balance;
 	}
+	//psuedo async
 	async getName() {
 		return this.name;
 	}
+	//psuedo async
 	async setName(newName) {
 		this.name = newName;
 	}

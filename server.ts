@@ -23,6 +23,6 @@ app.use(handleError);
 Database.loadDBFromJSON();
 
 //start nightly 4am future payment cron process
-Database.scheduleFuturePaymentCron();
+Database.scheduleFuturePaymentCron(true);
 
 app.listen(port, () => console.log(`API listening on port ${port}`));

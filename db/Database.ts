@@ -12,8 +12,10 @@ export class Database {
 	static payments: Map<string, Payment> = new Map<string, Payment>();
 
 	//only runs at 4am
-	static async scheduleFuturePaymentCron() {
-		const dueFuturePayments: Payment[] = await Database.getDueFuturePayments();
+	static async scheduleFuturePaymentCron(onlyDuePayments: boolean) {
+		const dueFuturePayments: Payment[] = await Database.getFuturePayments(
+			onlyDuePayments
+		);
 
 		for (const payment of dueFuturePayments) {
 			const {
@@ -49,30 +51,36 @@ export class Database {
 			}
 		}
 	}
-
+	//psuedo async
 	static async startTransaction() {
 		//ACID TRANSACTION STUB
 	}
+	//psuedo async
 	static async commitTransaction() {
 		//ACID TRANSACTION STUB
 	}
+	//psuedo async
 	static async rollbackTransaction() {
 		//ACID TRANSACTION STUB
 	}
-
+	//psuedo async
 	static async getUser(id: any) {
 		return Database.users[id];
 	}
+	//psuedo async
 	static async getPayment(id: any) {
 		return Database.payments[id];
 	}
+	//psuedo async
 	static async getUsers() {
 		return Database.users;
 	}
+	//psuedo async
 	static async getPayments() {
 		return Database.payments;
 	}
-	static async getDueFuturePayments() {
+	//psuedo async
+	static async getFuturePayments(onlyDuePayments: boolean) {
 		//would usually be an SQL select
 
 		const payments: Map<string, Payment> = await Database.getPayments();
@@ -83,10 +91,11 @@ export class Database {
 			//get payments that are not completed, and are to be run today
 			if (payment.completed === false) {
 				const dateObject: Date = new Date(payment.payDate);
-				return isDateToday(dateObject);
+				return onlyDuePayments ? isDateToday(dateObject) : true;
 			}
 		});
 	}
+	//psuedo async
 	static async createPaymentRecord(
 		id,
 		amount,
@@ -111,6 +120,7 @@ export class Database {
 
 		return payment;
 	}
+	//psuedo async
 	static loadDBFromJSON() {
 		for (const user of importUsers) {
 			Database.users[user.id] = new User(user.id, user.name, user.balance);
