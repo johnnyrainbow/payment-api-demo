@@ -122,7 +122,7 @@ export const getPayment = async function (
 		const payment = await Database.getPayment(paymentId);
 		if (!payment) throw new ResponseError(ERRORS.PAYMENT_NOT_FOUND, paymentId);
 
-		return res.status(200).send({ success: true, result: { payment } });
+		return res.status(200).send({ success: true, result: payment });
 	} catch (e) {
 		return next(e); //forward to error handler middleware
 	}
