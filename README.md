@@ -1,4 +1,4 @@
-# Paytron Payments API
+# Payments API
 
 REST payments API using in memory storage for psuedo database.
 
