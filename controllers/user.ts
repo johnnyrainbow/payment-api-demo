@@ -8,11 +8,11 @@ export const getUserBalance = async function (
 	req: Request,
 	res: Response,
 	next: NextFunction
-) {
+): Promise<Response<any, Record<string, any>> | void> {
 	try {
 		const { userId } = req.params;
 
-		const user: User = await Database.getUser(userId);
+		const user: User | undefined = await Database.getUser(userId);
 		if (!user) throw new ResponseError(ERRORS.USER_NOT_FOUND, userId);
 
 		return res

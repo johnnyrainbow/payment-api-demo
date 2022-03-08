@@ -28,10 +28,12 @@ export const creditUser = async (
 	amount: number,
 	description: string,
 	beneficiary_name: string
-) => {
+): Promise<Payment | null> => {
 	try {
-		const recipientUser: User = await Database.getUser(recipientUserId);
-		if (!recipientUserId) return null;
+		const recipientUser: User | undefined = await Database.getUser(
+			recipientUserId
+		);
+		if (!recipientUser) return null;
 
 		//perform ACID transaction
 		await Database.startTransaction();
@@ -39,7 +41,9 @@ export const creditUser = async (
 		await recipientUser.addBalance(amount);
 
 		//update the original payment record with complete true
-		const paymentRecord: Payment = await Database.getPayment(paymentId);
+		const paymentRecord: Payment | undefined = await Database.getPayment(
+			paymentId
+		);
 		if (!paymentRecord) throw new Error('Payment record does not exist');
 
 		await paymentRecord.setCompleted(true);
@@ -85,9 +89,9 @@ export const debitUser = async (
 	description: string,
 	beneficiary_name: string,
 	pay_date: string
-) => {
+): Promise<Payment | null> => {
 	try {
-		const user: User = await Database.getUser(userId);
+		const user: User | undefined = await Database.getUser(userId);
 		if (!user) return null;
 
 		//perform ACID transaction
@@ -136,12 +140,14 @@ export const instantFundsTransfer = async (
 	amount: number,
 	description: string,
 	beneficiary_name: string
-): Promise<Payment> => {
+): Promise<Payment | null> => {
 	try {
-		const user: User = await Database.getUser(userId);
+		const user: User | undefined = await Database.getUser(userId);
 		if (!user) return null;
 
-		const recipientUser: User = await Database.getUser(recipientUserId);
+		const recipientUser: User | undefined = await Database.getUser(
+			recipientUserId
+		);
 		if (!recipientUser) return null;
 
 		//perform ACID transaction
@@ -157,7 +163,7 @@ export const instantFundsTransfer = async (
 		//if there was a future record that triggered this with a payment id, we should update it to be completed
 		if (paymentId) {
 			const paymentRecord = await Database.getPayment(paymentId);
-			await paymentRecord.setCompleted(true);
+			if (paymentRecord) await paymentRecord.setCompleted(true);
 		}
 		//create the payment record
 		const payment: Payment = await Database.createPaymentRecord(
@@ -188,11 +194,13 @@ export const createFuturePaymentRecord = async (
 	description: string,
 	beneficiary_name: string,
 	pay_date: string
-) => {
-	const user: User = await Database.getUser(userId);
+): Promise<Payment | null> => {
+	const user: User | undefined = await Database.getUser(userId);
 	if (!user) return null;
 
-	const recipientUser: User = await Database.getUser(recipientUserId);
+	const recipientUser: User | undefined = await Database.getUser(
+		recipientUserId
+	);
 	if (!recipientUser) return null;
 
 	//create the payment record

@@ -5,29 +5,29 @@ export default class User {
 	name: string;
 	balance: number;
 
-	constructor(id, name, balance) {
+	constructor(id: string, name: string, balance: number) {
 		this.id = id === null || id === undefined ? shortid() : id;
 		this.name = name;
 		this.balance = balance || 0;
 	}
 	//psuedo async
-	async subtractBalance(amount: number) {
+	async subtractBalance(amount: number): Promise<void> {
 		this.balance -= amount;
 	}
 	//psuedo async
-	async addBalance(amount: number) {
+	async addBalance(amount: number): Promise<void> {
 		this.balance += amount;
 	}
 	//psuedo async
-	async getBalance() {
+	async getBalance(): Promise<number> {
 		return this.balance;
 	}
 	//psuedo async
-	async getName() {
+	async getName(): Promise<string> {
 		return this.name;
 	}
 	//psuedo async
-	async setName(newName) {
+	async setName(newName: string): Promise<void> {
 		this.name = newName;
 	}
 }

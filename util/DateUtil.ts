@@ -7,13 +7,13 @@ export const isValidDateFormat = (dateString: string) => {
 	return d.toISOString().slice(0, 10) === dateString;
 };
 
-export const isDateBusinessDay = (dateObject: Date) => {
+export const isDateBusinessDay = (dateObject: Date): boolean => {
 	var dayOfWeek: number = dateObject.getDay();
 	var isWeekend: boolean = dayOfWeek === 6 || dayOfWeek === 0; // 6 = Saturday, 0 = Sunday
 
 	return !isWeekend;
 };
-export const isDateToday = (dateObject: Date) => {
+export const isDateToday = (dateObject: Date): boolean => {
 	const today: Date = new Date();
 	return (
 		dateObject.getDate() == today.getDate() &&
@@ -21,8 +21,8 @@ export const isDateToday = (dateObject: Date) => {
 		dateObject.getFullYear() == today.getFullYear()
 	);
 };
-export const isDateInPast = (dateString: string) => {
+export const isDateInPast = (dateString: string): boolean => {
 	const dateObject: Date = new Date(dateString);
 	const now: Date = new Date();
-	if (dateObject < now && !isDateToday(dateObject)) return true;
+	return dateObject < now && !isDateToday(dateObject);
 };

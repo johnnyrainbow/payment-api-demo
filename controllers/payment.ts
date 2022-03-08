@@ -10,7 +10,12 @@ import {
 } from '../util/payments/PaymentCore';
 import { getPaymentType } from '../util/payments/PaymentUtil';
 import User from '../db/tables/User';
-import { FUTURE, INSTANT_SEND, SUBTRACT_NOW } from '../util/PaymentCodes';
+import {
+	FUTURE,
+	INSTANT_SEND,
+	INVALID,
+	SUBTRACT_NOW,
+} from '../util/PaymentCodes';
 import Payment from '../db/tables/Payment';
 
 /**
@@ -26,17 +31,30 @@ export const submitPayment = async function (
 	req: Request,
 	res: Response,
 	next: NextFunction
-) {
+): Promise<Response<any, Record<string, any>> | void> {
 	try {
-		const { pay_date, amount, description, beneficiary_name, beneficiary_id } =
-			req.body;
+		const {
+			pay_date,
+			amount,
+			description,
+			beneficiary_name,
+			beneficiary_id,
+		}: {
+			pay_date: string;
+			amount: number;
+			description: string;
+			beneficiary_name: string;
+			beneficiary_id: string;
+		} = req.body;
 
 		const { userId } = req.query;
 
-		const user: User = await Database.getUser(userId);
+		const user: User | undefined = await Database.getUser(userId as string);
 		if (!user) throw new ResponseError(ERRORS.USER_NOT_FOUND, userId);
 
-		const recipientUser: User = await Database.getUser(beneficiary_id);
+		const recipientUser: User | undefined = await Database.getUser(
+			beneficiary_id
+		);
 		if (!recipientUser)
 			throw new ResponseError(ERRORS.RECIPIENT_USER_NOT_FOUND, beneficiary_id);
 
@@ -51,13 +69,16 @@ export const submitPayment = async function (
 		if (amount < 0) throw new ResponseError(ERRORS.NEGATIVE_AMOUNT_INVALID);
 
 		//get is payment INSTANT, SUBTRACT_NOW, or FUTURE
-		const paymentType = getPaymentType(pay_date);
+		const paymentType: string | undefined = getPaymentType(pay_date);
+
+		if (paymentType === INVALID)
+			throw new ResponseError(ERRORS.INVALID_PAYMENT_TYPE);
 
 		if (paymentType !== FUTURE && (await user.getBalance()) - amount < 0)
 			//for a non future payment, check that the user has sufficient funds, negative balance not accepted
 			throw new ResponseError(ERRORS.INSUFFICIENT_BALANCE);
 
-		const paymentResult: any = await processPayment(
+		const paymentResult: Payment | null = await processPayment(
 			paymentType,
 			user,
 			recipientUser,
@@ -102,7 +123,7 @@ export const processPayment = async (
 	description: string,
 	beneficiary_name: string,
 	pay_date: string
-) => {
+): Promise<Payment | null> => {
 	/**
 	 * The INSTANT_SEND code. This payment code refers to any payment that
 	 * either has no pay_date, and is instantaneous, or is a future (2+ days out) payment being executed.
@@ -151,6 +172,8 @@ export const processPayment = async (
 			pay_date
 		);
 	}
+
+	return null;
 };
 
 export const getPayment = async function (
@@ -175,14 +198,14 @@ export const updatePayment = async function (
 	next: NextFunction
 ) {
 	try {
-		const { description } = req.body;
+		const { description }: { description: string } = req.body;
 		const { userId } = req.query;
 		const { paymentId } = req.params;
 
-		const user: User = await Database.getUser(userId);
+		const user: User | undefined = await Database.getUser(userId as string);
 		if (!user) throw new ResponseError(ERRORS.USER_NOT_FOUND, userId);
 
-		const payment: Payment = await Database.getPayment(paymentId);
+		const payment: Payment | undefined = await Database.getPayment(paymentId);
 		if (!payment) throw new ResponseError(ERRORS.PAYMENT_NOT_FOUND, paymentId);
 
 		if ((await payment.getSenderId()) !== userId)

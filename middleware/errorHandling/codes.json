@@ -30,5 +30,9 @@
 	"INVALID_PAY_DATE_RANGE": {
 		"message": "Passed date ${VALUE} is not a future date",
 		"code": 401
+	},
+	"INVALID_PAYMENT_TYPE": {
+		"message": "Generated payment type is invalid",
+		"code": 401
 	}
 }

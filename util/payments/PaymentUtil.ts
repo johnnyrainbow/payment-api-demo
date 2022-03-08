@@ -1,7 +1,7 @@
 import { isDateBusinessDay } from '../DateUtil';
-import { FUTURE, INSTANT_SEND, SUBTRACT_NOW } from '../PaymentCodes';
+import { FUTURE, INSTANT_SEND, SUBTRACT_NOW, INVALID } from '../PaymentCodes';
 
-export const getPaymentType = (payDate: string) => {
+export const getPaymentType = (payDate: string): string => {
 	if (!payDate) return INSTANT_SEND;
 
 	const payDateObject: Date = new Date(payDate);
@@ -21,4 +21,6 @@ export const getPaymentType = (payDate: string) => {
 
 	//anytime futher in the future
 	if (day_diff > 0) return FUTURE;
+
+	return INVALID;
 };

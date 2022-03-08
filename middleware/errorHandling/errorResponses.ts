@@ -18,7 +18,7 @@ const send = (
 	type: string,
 	statusCode: number,
 	message: string
-) => {
+): Response<any, Record<string, any>> => {
 	return res
 		.status(statusCode)
 		.send({ success: false, error: { type, message } });
@@ -29,12 +29,14 @@ export const handleError = (
 	req: Request,
 	res: Response,
 	next: NextFunction
-) => {
+): Response<any, Record<string, any>> => {
 	const handledError = handleSupportedErrors(err);
 
 	if (handledError) {
-	
-		handledError.message = handledError.message.replace('${VALUE}', handledError.injectedInfo);
+		handledError.message = handledError.message.replace(
+			'${VALUE}',
+			handledError.injectedInfo
+		);
 		return send(
 			res,
 			handledError.type,
@@ -46,7 +48,9 @@ export const handleError = (
 	return send(res, 'UNKNOWN ERROR', 500, 'Unknown');
 };
 
-const handleSupportedErrors = (err: ResponseError) => {
+const handleSupportedErrors = (
+	err: ResponseError
+): { type: string; code: any; message: string; injectedInfo: string } => {
 	for (const error in ERRORS) {
 		if (ERRORS[error].message === err.message)
 			return {

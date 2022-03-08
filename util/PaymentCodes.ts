@@ -33,3 +33,11 @@ export const FUTURE: string = 'FUTURE';
  */
 export const FUTURE_CREDIT_RECIPIENT_COMPLETE: string =
 	'FUTURE_CREDIT_RECIPIENT_COMPLETE';
+
+/**
+ * The INVALID code. This payment code refers to any payment that
+ * is not supported by our system
+ *
+ * @type {string}
+ */
+export const INVALID: string = 'INVALID';
